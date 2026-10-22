@@ -1,0 +1,257 @@
+........................................................................ [ 53%]
+...............................................................          [100%]
+=================================== PASSES ====================================
+________________________ test_discovery_and_conversion ________________________
+---------------------------- Captured stderr setup ----------------------------
+Processing request of type ListToolsRequest
+
+___________________________ test_agent_real_mcp_n34 ___________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+------------------------------ Captured log call ------------------------------
+INFO     agent.orchestrator:orchestrator.py:97 MCP request id=3c103368-8e42-404c-b665-75513d13bf81 tool=calculate_from_differences arguments={'mean_diff': 5.0, 'sd_diff': 10.0, 'alpha': 0.05, 'target_power': 0.8, 'tails': 'two-tailed'}
+INFO     agent.orchestrator:orchestrator.py:99 MCP success id=3c103368-8e42-404c-b665-75513d13bf81 result={'sample_size': 34, 'df': 33, 'delta': 2.9154759474226504, 'critical_t': 2.0345152974493383, 'actual_power': 0.8077775012792737}
+________________________________ test_followup ________________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+__________________________ test_natural_sd_followup ___________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+________________________ test_single_numeric_followup _________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+_____________________ test_mcp_error_never_becomes_result _____________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+___________________________ test_result_not_reused ____________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+____________________ test_real_ollama_to_mcp[differences] _____________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+____________________ test_real_ollama_to_mcp[effect-size] _____________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+_______________________ test_real_ollama_to_mcp[groups] _______________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+____________________ test_live_missing_parameter_followup _____________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+____________________________ test_cli_missing_mode ____________________________
+---------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] [--effect-size EFFECT_SIZE] [--alpha ALPHA]
+                   [--power POWER] [--tails {one-tailed,two-tailed}]
+                   [--mean-diff MEAN_DIFF] [--sd-diff SD_DIFF] [--mean1 MEAN1]
+                   [--mean2 MEAN2] [--sd1 SD1] [--sd2 SD2]
+                   [--correlation CORRELATION] [--format {json,text}]
+__main__.py: error: Choose exactly one input mode: --effect-size, --mean-diff/--sd-diff, or all five group parameters
+__________________________ test_cli_incomplete_mode ___________________________
+---------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] [--effect-size EFFECT_SIZE] [--alpha ALPHA]
+                   [--power POWER] [--tails {one-tailed,two-tailed}]
+                   [--mean-diff MEAN_DIFF] [--sd-diff SD_DIFF] [--mean1 MEAN1]
+                   [--mean2 MEAN2] [--sd1 SD1] [--sd2 SD2]
+                   [--correlation CORRELATION] [--format {json,text}]
+__main__.py: error: Both --mean-diff and --sd-diff are required
+_ test_live_semantic_clarification_before_real_call[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10-mean1=140 mean2=135 correlation=0.5-calculate_from_groups] _
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+_ test_live_semantic_clarification_before_real_call[standart sapma 10-Farklar\u0131n standart sapmas\u0131 10-calculate_from_differences] _
+---------------------------- Captured stderr call -----------------------------
+Processing request of type ListToolsRequest
+
+Processing request of type CallToolRequest
+
+_ test_unclear_or_incomplete_data_cannot_reach_mcp[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10] _
+---------------------------- Captured stderr setup ----------------------------
+Processing request of type ListToolsRequest
+
+________________ test_group_followup_only_calls_after_all_data ________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+__________________________ test_correlation_followup __________________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+_ test_explicit_difference_followup_can_select_difference_method[standart sapma 10] _
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+_ test_explicit_difference_followup_can_select_difference_method[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10] _
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+___________ test_invalid_explicit_sd_is_rejected_by_real_engine[0] ____________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+__________ test_invalid_explicit_sd_is_rejected_by_real_engine[-10] ___________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+__________________ test_explicit_difference_sd_real_mcp_n34 ___________________
+---------------------------- Captured stderr call -----------------------------
+Processing request of type CallToolRequest
+
+=========================== short test summary info ===========================
+PASSED tests/test_agent.py::test_input_extraction
+PASSED tests/test_agent.py::test_config_defaults
+PASSED tests/test_agent.py::test_invalid_timeout[0]
+PASSED tests/test_agent.py::test_invalid_timeout[-1]
+PASSED tests/test_agent.py::test_invalid_timeout[NaN]
+PASSED tests/test_agent.py::test_invalid_timeout[inf]
+PASSED tests/test_agent.py::test_invalid_timeout[invalid]
+PASSED tests/test_agent.py::test_discovery_and_conversion
+PASSED tests/test_agent.py::test_agent_real_mcp_n34
+PASSED tests/test_agent.py::test_missing_fields_no_model_or_tool[mean_diff]
+PASSED tests/test_agent.py::test_missing_fields_no_model_or_tool[sd_diff]
+PASSED tests/test_agent.py::test_missing_fields_no_model_or_tool[alpha]
+PASSED tests/test_agent.py::test_missing_fields_no_model_or_tool[target_power]
+PASSED tests/test_agent.py::test_missing_fields_no_model_or_tool[tails]
+PASSED tests/test_agent.py::test_followup
+PASSED tests/test_agent.py::test_missing_correlation
+PASSED tests/test_agent.py::test_natural_sd_followup
+PASSED tests/test_agent.py::test_single_numeric_followup
+PASSED tests/test_agent.py::test_ambiguous_input[mean_diff=5 mean_diff=6]
+PASSED tests/test_agent.py::test_ambiguous_input[tek y\xf6nl\xfc veya \xe7ift y\xf6nl\xfc]
+PASSED tests/test_agent.py::test_ambiguous_input[\xe7ift y\xf6nl\xfc de\u011fil]
+PASSED tests/test_agent.py::test_ambiguous_input[ba\u011f\u0131ms\u0131z iki grup]
+PASSED tests/test_agent.py::test_ambiguous_input[mean_diff=5 standart sapmas\u0131 10 standart sapmas\u0131 20]
+PASSED tests/test_agent.py::test_model_hallucinations_rejected[message0]
+PASSED tests/test_agent.py::test_model_hallucinations_rejected[message1]
+PASSED tests/test_agent.py::test_model_hallucinations_rejected[message2]
+PASSED tests/test_agent.py::test_model_hallucinations_rejected[message3]
+PASSED tests/test_agent.py::test_mcp_error_never_becomes_result
+PASSED tests/test_agent.py::test_result_not_reused
+PASSED tests/test_agent.py::test_client_strict_validation[True]
+PASSED tests/test_agent.py::test_client_strict_validation[5]
+PASSED tests/test_agent.py::test_client_strict_validation[None]
+PASSED tests/test_agent.py::test_client_strict_validation[nan]
+PASSED tests/test_agent.py::test_client_strict_validation[inf]
+PASSED tests/test_agent.py::test_invalid_results[changes0]
+PASSED tests/test_agent.py::test_invalid_results[changes1]
+PASSED tests/test_agent.py::test_invalid_results[changes2]
+PASSED tests/test_agent.py::test_invalid_results[changes3]
+PASSED tests/test_agent.py::test_invalid_results[changes4]
+PASSED tests/test_agent.py::test_invalid_results[changes5]
+PASSED tests/test_agent.py::test_ollama_connection_error
+PASSED tests/test_agent.py::test_ollama_model_missing
+PASSED tests/test_agent.py::test_official_ollama_request_serialization
+PASSED tests/test_agent_live.py::test_real_ollama_to_mcp[differences]
+PASSED tests/test_agent_live.py::test_real_ollama_to_mcp[effect-size]
+PASSED tests/test_agent_live.py::test_real_ollama_to_mcp[groups]
+PASSED tests/test_agent_live.py::test_live_missing_parameter_followup
+PASSED tests/test_agent_live.py::test_live_terminal_question_and_exit
+PASSED tests/test_cli.py::test_cli_effect_size
+PASSED tests/test_cli.py::test_cli_difference_mode
+PASSED tests/test_cli.py::test_cli_group_mode
+PASSED tests/test_cli.py::test_cli_invalid_effect_size
+PASSED tests/test_cli.py::test_cli_missing_mode
+PASSED tests/test_cli.py::test_cli_incomplete_mode
+PASSED tests/test_core.py::test_determine_differences
+PASSED tests/test_core.py::test_determine_groups
+PASSED tests/test_core.py::test_invalid_parameters[kwargs0-ValueError-Effect size must be strictly positive]
+PASSED tests/test_core.py::test_invalid_parameters[kwargs1-TypeError-Numeric parameters must be int or float]
+PASSED tests/test_core.py::test_invalid_parameters[kwargs2-ValueError-Parameters cannot be NaN, Infinite or empty]
+PASSED tests/test_core.py::test_invalid_parameters[kwargs3-ValueError-Tails must be 'one-tailed' or 'two-tailed']
+PASSED tests/test_core.py::test_invalid_parameters[kwargs4-ValueError-Alpha must be between 0 and 1]
+PASSED tests/test_core.py::test_invalid_parameters[kwargs5-ValueError-Target power must be between 0 and 1]
+PASSED tests/test_core.py::test_zero_standard_deviation
+PASSED tests/test_mcp_server.py::test_discovery
+PASSED tests/test_mcp_server.py::test_real_stdio_results[calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_real_stdio_results[calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_real_stdio_results[calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[True-calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[True-calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[True-calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[False-calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[False-calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[False-calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[0.5-calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[0.5-calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[0.5-calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[null-calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[null-calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[null-calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[None-calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[None-calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_strict_numeric_inputs[None-calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_invalid_arguments[arguments0]
+PASSED tests/test_mcp_server.py::test_invalid_arguments[arguments1]
+PASSED tests/test_mcp_server.py::test_invalid_arguments[arguments2]
+PASSED tests/test_mcp_server.py::test_invalid_arguments[arguments3]
+PASSED tests/test_mcp_server.py::test_invalid_arguments[arguments4]
+PASSED tests/test_mcp_server.py::test_engine_errors_over_stdio[calculate_sample_size-inputs0-ValueError: Effect size must be strictly positive]
+PASSED tests/test_mcp_server.py::test_engine_errors_over_stdio[calculate_sample_size-inputs1-RuntimeError: Sample size exceeded maximum threshold]
+PASSED tests/test_mcp_server.py::test_engine_errors_over_stdio[calculate_from_differences-inputs2-ZeroDivisionError: Standard deviation of difference cannot be zero]
+PASSED tests/test_mcp_server.py::test_engine_errors_over_stdio[calculate_from_groups-inputs3-ValueError: Correlation must be between -1 and 1]
+PASSED tests/test_mcp_server.py::test_nonfinite_adapter_inputs[nan]
+PASSED tests/test_mcp_server.py::test_nonfinite_adapter_inputs[inf]
+PASSED tests/test_mcp_server.py::test_nonfinite_adapter_inputs[-inf]
+PASSED tests/test_mcp_server.py::test_engine_delegation[calculate_sample_size-inputs0]
+PASSED tests/test_mcp_server.py::test_engine_delegation[calculate_from_differences-inputs1]
+PASSED tests/test_mcp_server.py::test_engine_delegation[calculate_from_groups-inputs2]
+PASSED tests/test_mcp_server.py::test_process_eof_shutdown_and_protocol_only_stdout
+PASSED tests/test_semantic_live.py::test_live_semantic_clarification_before_real_call[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10-mean1=140 mean2=135 correlation=0.5-calculate_from_groups]
+PASSED tests/test_semantic_live.py::test_live_semantic_clarification_before_real_call[standart sapma 10-Farklar\u0131n standart sapmas\u0131 10-calculate_from_differences]
+PASSED tests/test_semantic_validation.py::test_explicit_difference_sd[farklar\u0131n standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_explicit_difference_sd[fark\u0131n standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_explicit_difference_sd[sd_diff=10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[her \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[her iki \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[\xf6l\xe7\xfcmlerin standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[standart sapma 10]
+PASSED tests/test_semantic_validation.py::test_non_difference_sd_never_becomes_sd_diff[birinci \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_shared_measurement_sd_has_no_invented_parameters
+PASSED tests/test_semantic_validation.py::test_unclear_or_incomplete_data_cannot_reach_mcp[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_unclear_or_incomplete_data_cannot_reach_mcp[\xf6l\xe7\xfcmlerin standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_unclear_or_incomplete_data_cannot_reach_mcp[standart sapma 10]
+PASSED tests/test_semantic_validation.py::test_measurement_sd_asks_for_means_and_correlation
+PASSED tests/test_semantic_validation.py::test_missing_correlation_never_calls_tool
+PASSED tests/test_semantic_validation.py::test_group_followup_only_calls_after_all_data
+PASSED tests/test_semantic_validation.py::test_correlation_followup
+PASSED tests/test_semantic_validation.py::test_explicit_difference_followup_can_select_difference_method[standart sapma 10]
+PASSED tests/test_semantic_validation.py::test_explicit_difference_followup_can_select_difference_method[her bir \xf6l\xe7\xfcm\xfcn standart sapmas\u0131 10]
+PASSED tests/test_semantic_validation.py::test_bare_number_does_not_answer_a_type_question
+PASSED tests/test_semantic_validation.py::test_ambiguous_followup_invalidates_cached_sd
+PASSED tests/test_semantic_validation.py::test_invalid_explicit_sd_is_rejected_by_real_engine[0]
+PASSED tests/test_semantic_validation.py::test_invalid_explicit_sd_is_rejected_by_real_engine[-10]
+PASSED tests/test_semantic_validation.py::test_explicit_difference_sd_real_mcp_n34
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.5-0.05-0.8-34-33-2.915476-2.034515-0.807778]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.2-0.05-0.8-199-198-2.821347-1.972017-0.801691]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.8-0.05-0.95-23-22-3.836665-2.073873-0.95585]
+PASSED tests/test_validation.py::test_spec_vector[one-tailed-0.5-0.05-0.8-27-26-2.598076-1.705618-0.811832]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.3-0.01-0.9-169-168-3.9-2.60541-0.900699]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.3-0.001-0.95-277-276-4.992995-3.326125-0.950873]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.3-0.001-0.99-356-355-5.660389-3.318143-0.990006]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.5-0.001-0.999-169-168-6.5-3.349379-0.999045]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.1-0.001-0.99-3161-3160-5.622277-3.293608-0.990016]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-0.05-0.001-0.9-8367-8366-4.573565-3.29169-0.900001]
+PASSED tests/test_validation.py::test_spec_vector[two-tailed-20-0.05-0.8-2-1-28.284271-12.706205-0.973524]
+135 passed in 40.16s
+
+EXIT_CODE=0

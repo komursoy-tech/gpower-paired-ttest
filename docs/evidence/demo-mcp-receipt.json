@@ -1,0 +1,56 @@
+{
+  "model": "qwen2.5:7b",
+  "query": "Öncesi ve sonrası sistolik tansiyon farkı 5 mmHg, farkların standart sapması 10 mmHg. Alfa 0.05, güç %80, çift yönlü test için kaç hasta gerekir?",
+  "execution": {
+    "request_id": "a96a0fb4-5043-4c9e-882c-8ebd2df52eaa",
+    "tool": "calculate_from_differences",
+    "arguments": {
+      "mean_diff": 5.0,
+      "sd_diff": 10.0,
+      "alpha": 0.05,
+      "target_power": 0.8,
+      "tails": "two-tailed"
+    },
+    "result": {
+      "sample_size": 34,
+      "df": 33,
+      "delta": 2.9154759474226504,
+      "critical_t": 2.0345152974493383,
+      "actual_power": 0.8077775012792737
+    }
+  },
+  "actual_sdk_calls": [
+    {
+      "name": "calculate_from_differences",
+      "arguments": {
+        "mean_diff": 5,
+        "sd_diff": 10,
+        "alpha": 0.05,
+        "target_power": 0.8,
+        "tails": "two-tailed"
+      },
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"sample_size\": 34,\n  \"df\": 33,\n  \"delta\": 2.9154759474226504,\n  \"critical_t\": 2.0345152974493383,\n  \"actual_power\": 0.8077775012792737\n}"
+          }
+        ],
+        "structuredContent": {
+          "sample_size": 34,
+          "df": 33,
+          "delta": 2.9154759474226504,
+          "critical_t": 2.0345152974493383,
+          "actual_power": 0.8077775012792737
+        },
+        "isError": false
+      }
+    }
+  ],
+  "answer": "MCP hesaplama sonucu: çift yönlü eşleştirilmiş t-testi için en az 34 tamamlanmış katılımcı/eşleşmiş çift gerekir.\nAlpha: 0.05; hedef güç: %80.\nSerbestlik derecesi (df): 33; delta: 2.915476; kritik t: 2.034515; ulaşılan güç: %80.7778.\nBu sayı tamamlanmış çiftleri belirtir; kayıp katılımcı payı eklenmemiştir.",
+  "discovered_tools": [
+    "calculate_from_differences",
+    "calculate_from_groups",
+    "calculate_sample_size"
+  ]
+}

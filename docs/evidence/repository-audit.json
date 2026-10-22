@@ -1,0 +1,9 @@
+{
+  "candidate_file_count": 55,
+  "findings": [],
+  "ignored_local_artifacts": [
+    ".venv/Scripts/python.exe",
+    ".pytest_cache/README.md"
+  ],
+  "note": "Pattern scan of candidate text files, not a full secret/history audit; images are not decoded."
+}

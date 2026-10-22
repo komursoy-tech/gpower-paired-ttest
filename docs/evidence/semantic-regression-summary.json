@@ -1,0 +1,26 @@
+{
+  "changed_existing_sources": [
+    "agent/inputs.py",
+    "agent/orchestrator.py"
+  ],
+  "unexpected_source_changes": [],
+  "added_test_files": [
+    "tests/test_semantic_live.py",
+    "tests/test_semantic_validation.py"
+  ],
+  "original_test_ids": 109,
+  "original_tests_passed_again": 109,
+  "new_regression_tests": 26,
+  "total_passed": 135,
+  "live_tests_passed": 7,
+  "failed": 0,
+  "skipped": 0,
+  "negative_before": {
+    "passed": 8,
+    "failed": 1
+  },
+  "negative_after": {
+    "passed": 9,
+    "failed": 0
+  }
+}

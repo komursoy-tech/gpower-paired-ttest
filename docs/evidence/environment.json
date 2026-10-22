@@ -1,0 +1,17 @@
+{
+  "python": "3.13.4",
+  "platform": "win32",
+  "packages": {
+    "mcp": "1.30.0",
+    "ollama": "0.6.3",
+    "pydantic": "2.14.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pytest": "9.1.1",
+    "anyio": "4.15.1",
+    "jsonschema": "4.26.0",
+    "httpx": "0.28.1"
+  },
+  "model": "qwen2.5:7b",
+  "ollama_cli": "ollama version is 0.33.3"
+}
