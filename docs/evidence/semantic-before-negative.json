@@ -1,0 +1,108 @@
+{
+  "model_fault_injection": "FixedModel; actual MCP server remains real",
+  "live_semantic_probe": "qwen2.5:7b",
+  "scenarios": [
+    {
+      "scenario": "missing_tails",
+      "status": "PASS",
+      "message": "Hesaplama için eksik veya net olmayan bilgileri belirtin: test yönü (tek yönlü / çift yönlü). Değerleri tahmin etmeyeceğim.",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "ambiguous_sd_alternatives",
+      "status": "PASS",
+      "message": "Standart sapma belirsiz. Farkların standart sapmasını sd_diff olarak belirtin.",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "invalid_alpha",
+      "status": "PASS",
+      "message": "MCP araç hatası: Error executing tool calculate_from_differences: ValueError: Alpha must be between 0 and 1",
+      "mcp_calls": [
+        {
+          "name": "calculate_from_differences",
+          "arguments": {
+            "mean_diff": 5,
+            "sd_diff": 10,
+            "alpha": 1,
+            "target_power": 0.8,
+            "tails": "two-tailed"
+          }
+        }
+      ],
+      "execution": null
+    },
+    {
+      "scenario": "invented_tool",
+      "status": "PASS",
+      "message": "Model izin verilmeyen araç önerdi: invented_tool",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "missing_tool_argument",
+      "status": "PASS",
+      "message": "Geçersiz araç parametreleri: 'sd_diff' is a required property",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "wrong_type_tool_argument",
+      "status": "PASS",
+      "message": "Geçersiz araç parametreleri: '10' is not of type 'number'",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "single_measurement_sd_must_be_clarified",
+      "status": "FAIL",
+      "message": "MCP hesaplama sonucu: çift yönlü eşleştirilmiş t-testi için en az 34 tamamlanmış katılımcı/eşleşmiş çift gerekir.\nAlpha: 0.05; hedef güç: %80.\nSerbestlik derecesi (df): 33; delta: 2.915476; kritik t: 2.034515; ulaşılan güç: %80.7778.\nBu sayı tamamlanmış çiftleri belirtir; kayıp katılımcı payı eklenmemiştir.",
+      "mcp_calls": [
+        {
+          "name": "calculate_from_differences",
+          "arguments": {
+            "alpha": 0.05,
+            "target_power": 0.8,
+            "tails": "two-tailed",
+            "mean_diff": 5,
+            "sd_diff": 10
+          }
+        }
+      ],
+      "execution": {
+        "request_id": "d6d057bf-d8c8-4859-a346-3dc203a318a7",
+        "tool": "calculate_from_differences",
+        "arguments": {
+          "mean_diff": 5.0,
+          "sd_diff": 10.0,
+          "alpha": 0.05,
+          "target_power": 0.8,
+          "tails": "two-tailed"
+        },
+        "result": {
+          "sample_size": 34,
+          "df": 33,
+          "delta": 2.9154759474226504,
+          "critical_t": 2.0345152974493383,
+          "actual_power": 0.8077775012792737
+        }
+      }
+    },
+    {
+      "scenario": "ollama_connection_refused",
+      "status": "PASS",
+      "message": "Ollama servisine bağlanılamadı (http://127.0.0.1:60969). Ollama'yı başlatın.",
+      "execution": null
+    },
+    {
+      "scenario": "mcp_connection_closed",
+      "status": "PASS",
+      "message": "McpError: Connection closed",
+      "execution": null
+    }
+  ],
+  "passed": 8,
+  "failed": 1
+}

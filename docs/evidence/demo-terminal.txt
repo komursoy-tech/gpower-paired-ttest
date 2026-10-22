@@ -1,0 +1,15 @@
+QUERY=Öncesi ve sonrası sistolik tansiyon farkı 5 mmHg, farkların standart sapması 10 mmHg. Alfa 0.05, güç %80, çift yönlü test için kaç hasta gerekir?
+STDOUT:
+G*Power ajanı hazır (qwen2.5:7b). Çıkış: çıkış / exit; yeni hesaplama: yeni.
+Siz> MCP hesaplama sonucu: çift yönlü eşleştirilmiş t-testi için en az 34 tamamlanmış katılımcı/eşleşmiş çift gerekir.
+Alpha: 0.05; hedef güç: %80.
+Serbestlik derecesi (df): 33; delta: 2.915476; kritik t: 2.034515; ulaşılan güç: %80.7778.
+Bu sayı tamamlanmış çiftleri belirtir; kayıp katılımcı payı eklenmemiştir.
+Siz> 
+STDERR:
+Processing request of type ListToolsRequest
+INFO:agent.orchestrator:MCP request id=592fde4f-4b09-4612-b55a-82e873df8636 tool=calculate_from_differences arguments={'mean_diff': 5.0, 'sd_diff': 10.0, 'alpha': 0.05, 'target_power': 0.8, 'tails': 'two-tailed'}
+Processing request of type CallToolRequest
+INFO:agent.orchestrator:MCP success id=592fde4f-4b09-4612-b55a-82e873df8636 result={'sample_size': 34, 'df': 33, 'delta': 2.9154759474226504, 'critical_t': 2.0345152974493383, 'actual_power': 0.8077775012792737}
+
+EXIT_CODE=0

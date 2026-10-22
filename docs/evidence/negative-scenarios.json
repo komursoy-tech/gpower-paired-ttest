@@ -1,0 +1,80 @@
+{
+  "model_fault_injection": "FixedModel; actual MCP server remains real",
+  "live_semantic_probe": "qwen2.5:7b",
+  "scenarios": [
+    {
+      "scenario": "missing_tails",
+      "status": "PASS",
+      "message": "Hesaplama için eksik veya net olmayan bilgileri belirtin: test yönü (tek yönlü / çift yönlü). Değerleri tahmin etmeyeceğim.",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "ambiguous_sd_alternatives",
+      "status": "PASS",
+      "message": "Standart sapma belirsiz. Farkların standart sapmasını sd_diff olarak belirtin.",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "invalid_alpha",
+      "status": "PASS",
+      "message": "MCP araç hatası: Error executing tool calculate_from_differences: ValueError: Alpha must be between 0 and 1",
+      "mcp_calls": [
+        {
+          "name": "calculate_from_differences",
+          "arguments": {
+            "mean_diff": 5,
+            "sd_diff": 10,
+            "alpha": 1,
+            "target_power": 0.8,
+            "tails": "two-tailed"
+          }
+        }
+      ],
+      "execution": null
+    },
+    {
+      "scenario": "invented_tool",
+      "status": "PASS",
+      "message": "Model izin verilmeyen araç önerdi: invented_tool",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "missing_tool_argument",
+      "status": "PASS",
+      "message": "Geçersiz araç parametreleri: 'sd_diff' is a required property",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "wrong_type_tool_argument",
+      "status": "PASS",
+      "message": "Geçersiz araç parametreleri: '10' is not of type 'number'",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "single_measurement_sd_must_be_clarified",
+      "status": "PASS",
+      "message": "Hesaplama için eksik veya net olmayan bilgileri belirtin: öncesi ortalama (mean1), sonrası ortalama (mean2), korelasyon (correlation). Değerleri tahmin etmeyeceğim.",
+      "mcp_calls": [],
+      "execution": null
+    },
+    {
+      "scenario": "ollama_connection_refused",
+      "status": "PASS",
+      "message": "Ollama servisine bağlanılamadı (http://127.0.0.1:63063). Ollama'yı başlatın.",
+      "execution": null
+    },
+    {
+      "scenario": "mcp_connection_closed",
+      "status": "PASS",
+      "message": "McpError: Connection closed",
+      "execution": null
+    }
+  ],
+  "passed": 9,
+  "failed": 0
+}
