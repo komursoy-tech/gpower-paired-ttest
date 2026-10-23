@@ -1,40 +1,69 @@
-# [REA] G*Power Bağımsız Doğrulama Raporu — Görev 2
+# [REA] G*Power Bağımsız Doğrulama Raporu — Görev 2 (K2)
 
-**Tarih:** 21 Ekim 2026  
-**Referans uygulama:** G*Power 3.1.9.7 (Windows)  
-**Modül:** t tests → Means: Difference between two dependent means (matched pairs) → A priori  
-**Python ortamı (kullanıcının terminal çıktısı):** Python 3.14.3, pytest 9.1.1 (Windows); NumPy/SciPy sürümleri kaydedilmedi.
+**Güncelleme:** 24 Ekim 2026
+**Referans uygulama:** G*Power 3.1.9.7 (Windows)
+**Test:** t tests → Means: Difference between two dependent means (matched pairs)
+**Sözleşme:** CONTRACT.md 1.0.0 (`t-paired`)
+**Yerel ortam:** Windows, Python 3.14.3, pytest 9.1.1 (kullanıcı terminal kaydı). NumPy ve SciPy sürümleri bu raporda doğrulanmadı.
 
-## Bulgular
+## G*Power ekran görüntüleri ve sonuçlar
 
-Kullanıcı tarafından G*Power üzerinde çalıştırılıp ekran görüntüsüyle belgelenen 5 senaryoda gerekli örneklem büyüklüğü (N), serbestlik derecesi (df) ve diğer sayısal çıktılar SPEC.md §5 vektörleri ve Python CLI referans değerleriyle belirtilen 1e-5 mutlak tolerans içinde eşleşti.
+Aşağıdaki V-01–V-05 a-priori gözlemleri önceki doğrulama kaydından korunmuştur. V-06, kullanıcının doğrudan sağladığı G*Power post-hoc ekran görüntüsüyle doğrulanmıştır.
 
-| Vektör | Tail | dz | α | Hedef güç | G*Power N | Python N | df | G*Power actual power | Kanıt |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| V-01 | two-tailed | 0.5 | 0.05 | 0.80 | 34 | 34 | 33 | 0.8077775 | [Ekran görüntüsü](evidence/V-01.JPG) |
-| V-02 | two-tailed | 0.2 | 0.05 | 0.80 | 199 | 199 | 198 | 0.8016910 | [Ekran görüntüsü](evidence/V-02.JPG) |
-| V-03 | two-tailed | 0.8 | 0.05 | 0.95 | 23 | 23 | 22 | 0.9558497 | [Ekran görüntüsü](evidence/V-03.JPG) |
-| V-04 | one-tailed | 0.5 | 0.05 | 0.80 | 27 | 27 | 26 | 0.8118316 | [Ekran görüntüsü](evidence/V-04.JPG) |
-| V-05 | two-tailed | 0.3 | 0.01 | 0.90 | 169 | 169 | 168 | 0.9006992 | [Ekran görüntüsü](evidence/V-05.JPG) |
+| ID | Mod | Tails | dz | α | Hedef güç / verilen N | G*Power N | df | G*Power güç | Kanıt |
+|---|---|---:|---:|---:|---|---:|---:|---:|---|
+| V-01 | a-priori | 2 | 0.5 | 0.05 | güç 0.80 | 34 | 33 | 0.8077775 | [V-01](evidence/V-01.JPG) |
+| V-02 | a-priori | 2 | 0.2 | 0.05 | güç 0.80 | 199 | 198 | 0.8016910 | [V-02](evidence/V-02.JPG) |
+| V-03 | a-priori | 2 | 0.8 | 0.05 | güç 0.95 | 23 | 22 | 0.9558497 | [V-03](evidence/V-03.JPG) |
+| V-04 | a-priori | 1 | 0.5 | 0.05 | güç 0.80 | 27 | 26 | 0.8118316 | [V-04](evidence/V-04.JPG) |
+| V-05 | a-priori | 2 | 0.3 | 0.01 | güç 0.90 | 169 | 168 | 0.9006992 | [V-05](evidence/V-05.JPG) |
+| V-06 | post-hoc | 1 | 0.5 | 0.05 | N = 45 | 45 | 44 | 0.9512400 | [V-06](evidence/V-06.JPG) |
 
-**Gözlenen N eşleşmesi:** 5/5 = %100 (yalnızca bu beş bağımsız gözlem için).
-**Yerel otomatik testler:** Kullanıcının paylaştığı `python -m pytest -v` çıktısında 26/26 başarılı, 2.60 saniye.
-**CLI örnek çıktısı:** `python cli.py --effect-size 0.5 --alpha 0.05 --power 0.80` → `sample_size=34`, `df=33`, `delta=2.9154759474226504`, `critical_t=2.0345152974493383`, `actual_power=0.8077775012792737`.
+### V-06: bağımsız post-hoc karşılaştırması
 
-## Kanıtların kaynağı ve sınırlar
+G*Power ekran görüntüsünde `tails=1`, `dz=0.5`, `alpha=0.05`, `n_total=45` girildi. Çıktılar: `ncp=3.3541020`, `critical_t=1.6802300`, `df=44`, `power=0.9512400`.
 
-- `evidence/V-01.JPG`–`V-05.JPG` dosyaları G*Power uygulamasından kullanıcı tarafından sağlanan ekran görüntüleridir; orijinal program dosyaları, decompile çıktısı veya GPower.exe repoya eklenmemiştir.
-- Python tarafındaki V-02–V-05 sayısal değerleri SPEC.md ve geçen testlerdeki vektörlerden alınmıştır; bunlar her biri için ayrı terminal çalıştırma kayıtları değildir.
-- Bu 5 senaryonun başarılı olması hocanın gizli testlerinde %90 başarıyı garanti etmez. Daha çok bağımsız test, özellikle sınır ve hata durumları önerilir.
-- REA araçlarının kullanımı ve iki ajan arasında clean-room ayrımı için ayrı süreç kayıtları gerekiyorsa ayrıca belgelendirilmelidir.
-
-## Tekrarlama komutları
+Aynı parametrelerle kullanıcı terminalinde çalıştırılan CLI:
 
 ```cmd
-python -m pytest -v
-python cli.py --effect-size 0.5 --alpha 0.05 --power 0.80
-python cli.py --effect-size 0.2 --alpha 0.05 --power 0.80
-python cli.py --effect-size 0.8 --alpha 0.05 --power 0.95
-python cli.py --effect-size 0.5 --alpha 0.05 --power 0.80 --tails one-tailed
-python cli.py --effect-size 0.3 --alpha 0.01 --power 0.90
+python cli.py --test t-paired --mode post-hoc --tails 1 --dz 0.5 --alpha 0.05 --n_total 45
 ```
+
+```json
+{"ncp":3.3541019662496847,"critical_t":1.6802299765721171,"df":44,"power":0.9512400452506585}
+```
+
+| Alan | G*Power | CLI | Mutlak fark |
+|---|---:|---:|---:|
+| ncp | 3.3541020 | 3.3541019662496847 | 3.38e-8 |
+| critical_t | 1.6802300 | 1.6802299765721171 | 2.34e-8 |
+| df | 44 | 44 | 0 |
+| power | 0.9512400 | 0.9512400452506585 | 4.53e-8 |
+
+**Sonuç:** V-06 için tam sayı eşleşmesi sağlandı; ondalık farklar CONTRACT.md §6'daki `1e-6` toleransının altında. A-priori için de sözleşmenin açık K2 vektörü (`tails=1`, `dz=0.5`, `alpha=0.05`, `power=0.95`) kullanıcı CLI çıktısıyla eşleşti: `n_total=45`, `df=44`, `actual_power=0.9512400452506585`. Bu ikinci eşleşme, V-06'dan ayrı yeni bir G*Power ekran görüntüsü olarak sayılmıyor.
+
+## Otomatik testler
+
+Kullanıcının son terminal kaydı:
+
+```cmd
+python -m pytest tests/test_core.py tests/test_cli.py tests/test_validation.py -v
+```
+
+**46 passed in 1.93s.** Kapsam: `test_core.py`, `test_cli.py`, `test_validation.py`. Bu sonuç bütün projenin MCP/ajan testlerinin geçtiği anlamına gelmez; tam `pytest -q` çalıştırması MCP bağımlılık/sürüm uyumsuzluğundan etkilenmişti.
+
+## Tekrarlama komutları (CONTRACT.md 1.0.0)
+
+```cmd
+python cli.py --version
+python cli.py --test t-paired --mode a-priori --tails 1 --dz 0.5 --alpha 0.05 --power 0.95
+python cli.py --test t-paired --mode post-hoc --tails 1 --dz 0.5 --alpha 0.05 --n_total 45
+python -m pytest tests/test_core.py tests/test_cli.py tests/test_validation.py -v
+```
+
+## Sınırlar ve takip işleri
+
+- Altı G*Power ekran görüntüsü toplamı, ödevde belirtilen 30+ bağımsız ekran görüntüsü hedefinin yerine geçmez. Hedefin takım geneli mi kişi bazında mı uygulandığı ödev yönergesiyle ayrıca kontrol edilmelidir.
+- Bu rapordaki altı vektörün eşleşmesi gizli testlerin tamamının geçeceğini garanti etmez. Sınır durumları, çift kuyruk, hatalı girdiler ve diğer aileler ayrı test edilmelidir.
+- `SPEC.md` veya pytest içindeki sayısal vektörler, tek başına bağımsız G*Power gözlemi olarak sayılmadı.
+- Bu rapor mevcut kanıtları kaydeder; MCP ve ajan kodlarını değiştirmez.
