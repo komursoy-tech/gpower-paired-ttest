@@ -67,3 +67,36 @@ python -m pytest tests/test_core.py tests/test_cli.py tests/test_validation.py -
 - Bu rapordaki altı vektörün eşleşmesi gizli testlerin tamamının geçeceğini garanti etmez. Sınır durumları, çift kuyruk, hatalı girdiler ve diğer aileler ayrı test edilmelidir.
 - `SPEC.md` veya pytest içindeki sayısal vektörler, tek başına bağımsız G*Power gözlemi olarak sayılmadı.
 - Bu rapor mevcut kanıtları kaydeder; MCP ve ajan kodlarını değiştirmez.
+
+## Differential Validation — 700 Test Cases
+
+**Date:** 24 October 2026
+**Test family:** t tests — Difference between two dependent means (matched pairs)
+**Contract:** v1.0.0
+**Validation script:** `differential_validation_v3.py`
+**Results file:** `evidence/differential_results.csv`
+
+### Results
+
+| Metric | Result |
+|---|---|
+| Total test cases | 700 |
+| Passed | 700 |
+| Failed | 0 |
+| Tolerance | 1e-6 |
+| SciPy nct fallback cases | 0 |
+| Chi-square quadrature cases | 84 |
+
+### Validation Method
+
+The implementation was compared against reference calculations using statsmodels, SciPy, and numerical integration.
+
+For 84 cases where the initial reference computation produced NaN, chi-square numerical quadrature was used as an alternative.
+
+All 700 comparisons passed within the specified tolerance.
+
+### Limitations
+
+These results do not constitute 700 fully independent G*Power oracle comparisons. The numerical integration method shares mathematical and computational components with the project's core engine.
+
+Independent G*Power screenshot-based validation is tracked separately.
