@@ -100,3 +100,23 @@ All 700 comparisons passed within the specified tolerance.
 These results do not constitute 700 fully independent G*Power oracle comparisons. The numerical integration method shares mathematical and computational components with the project's core engine.
 
 Independent G*Power screenshot-based validation is tracked separately.
+## G*Power GUI Validation — 30 Cases
+
+**Reference software:** G*Power 3.1.9.7  
+**Test family:** t tests  
+**Statistical test:** Difference between two dependent means (matched pairs)  
+**Contract tolerance:** 1e-6
+
+### Results
+
+| Metric | Result |
+|---|---|
+| Screenshot-backed cases | 30 |
+| Passed | 30 |
+| Failed | 0 |
+| Evidence files | evidence/V-01.JPG – V-30.JPG |
+| Comparison fields | ncp, critical_t, df, sample size, achieved power |
+
+All 30 G*Power GUI cases matched the Python CLI calculations within the specified tolerance. Both a-priori and post-hoc analyses were included.
+
+V-26 was corrected to use a one-tailed test (dz=0.7, alpha=0.01, N=30), then successfully revalidated.
