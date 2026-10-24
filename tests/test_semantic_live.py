@@ -47,10 +47,11 @@ async def test_live_semantic_clarification_before_real_call(sd, followup, expect
                 answer = await agent.ask(followup)
                 assert len(calls) == 1
                 name, arguments, response = calls[0]
-                assert name == expected_tool
+                assert name == "power_analysis"
                 assert not response.isError
-                assert response.structuredContent["sample_size"] == 34
+                assert response.structuredContent["n_total"] == 34
                 assert "34 tamamlanmış" in answer
                 if name == "calculate_from_groups":
                     assert "sd_diff" not in arguments
-                    assert arguments["correlation"] == 0.5
+                    assert arguments["dz"] == 0.5
+                    assert "correlation" not in arguments

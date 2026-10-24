@@ -9,6 +9,7 @@ from agent.errors import AgentError
 from agent.inputs import extract_explicit
 from agent.mcp_client import open_mcp
 from agent.orchestrator import Agent
+from agent.contract import prepare_arguments
 
 
 BASE = "Öncesi ve sonrası sistolik tansiyon farkı 5 mmHg, {sd}. Alfa 0.05, güç %80, çift yönlü test için kaç hasta gerekir?"
@@ -20,7 +21,7 @@ GROUP = {"mean1": 140, "mean2": 135, "sd1": 10, "sd2": 10, "correlation": 0.5, *
 def model_for(tool="calculate_from_differences", arguments=None):
     model = AsyncMock()
     model.choose.return_value = Message(role="assistant", tool_calls=[{"function": {
-        "name": tool, "arguments": DIFF if arguments is None else arguments,
+        "name": "power_analysis", "arguments": prepare_arguments(tool, DIFF if arguments is None else arguments),
     }}])
     return model
 
@@ -100,8 +101,8 @@ async def test_group_followup_only_calls_after_all_data(gateway):
         assert "mean1" in answer and "mean2" in answer
         call.assert_not_awaited()
         answer = await agent.ask("mean1=140 mean2=135")
-        call.assert_awaited_once_with("calculate_from_groups", GROUP)
-        assert agent.last_execution.result["sample_size"] == 34
+        call.assert_awaited_once_with("power_analysis", prepare_arguments("calculate_from_groups", GROUP))
+        assert agent.last_execution.result["n_total"] == 34
         assert "34 tamamlanmış" in answer
 
 
@@ -120,7 +121,7 @@ async def test_explicit_difference_followup_can_select_difference_method(gateway
         await agent.ask(BASE.format(sd=initial_sd))
         call.assert_not_awaited()
         answer = await agent.ask("Farkların standart sapması 10")
-        call.assert_awaited_once_with("calculate_from_differences", DIFF)
+        call.assert_awaited_once_with("power_analysis", prepare_arguments("calculate_from_differences", DIFF))
         assert "34 tamamlanmış" in answer
 
 
@@ -152,8 +153,8 @@ async def test_ambiguous_followup_invalidates_cached_sd(gateway):
 @pytest.mark.anyio
 @pytest.mark.parametrize("sd", [0, -10])
 async def test_invalid_explicit_sd_is_rejected_by_real_engine(gateway, sd):
-    agent = Agent(model_for(arguments={**DIFF, "sd_diff": sd}), gateway)
-    with pytest.raises(AgentError, match="MCP araç hatası"):
+    agent = Agent(model_for(), gateway)
+    with pytest.raises(AgentError, match="Girdi hatası"):
         await agent.ask(BASE.format(sd=f"farkların standart sapması {sd}"))
     assert agent.last_execution is None
 
@@ -162,4 +163,4 @@ async def test_invalid_explicit_sd_is_rejected_by_real_engine(gateway, sd):
 async def test_explicit_difference_sd_real_mcp_n34(gateway):
     agent = Agent(model_for(), gateway)
     assert "34 tamamlanmış" in await agent.ask(BASE.format(sd="farkların standart sapması 10"))
-    assert agent.last_execution.result["sample_size"] == 34
+    assert agent.last_execution.result["n_total"] == 34

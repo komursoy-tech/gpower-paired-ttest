@@ -17,13 +17,14 @@ from agent.orchestrator import Agent
 EXAMPLE = "Öncesi ve sonrası tansiyon farkı 5 mmHg, standart sapması 10 mmHg. Alpha 0.05, güç %80 ve çift yönlü test için kaç hasta gerekir?"
 DIFFERENCES = {"mean_diff": 5, "sd_diff": 10, "alpha": 0.05,
                "target_power": 0.8, "tails": "two-tailed"}
-RESULT = {"sample_size": 34, "df": 33, "delta": 2.915476,
+CONTRACT = {"test": "t-paired", "mode": "a-priori", "tails": 2, "dz": 0.5, "alpha": 0.05, "power": 0.8}
+RESULT = {"n_total": 34, "df": 33, "ncp": 2.915476,
           "critical_t": 2.034515, "actual_power": 0.807778}
 
 
-def tool_message(name="calculate_from_differences", arguments=None):
+def tool_message(name="power_analysis", arguments=None):
     return Message(role="assistant", tool_calls=[{"function": {
-        "name": name, "arguments": DIFFERENCES if arguments is None else arguments,
+        "name": name, "arguments": CONTRACT if arguments is None else arguments,
     }}])
 
 
@@ -70,7 +71,7 @@ def test_invalid_timeout(monkeypatch, value):
 async def test_discovery_and_conversion(gateway):
     converted = gateway.ollama_tools()
     assert {tool["function"]["name"] for tool in converted} == {
-        "calculate_sample_size", "calculate_from_differences", "calculate_from_groups",
+        "power_analysis",
     }
     for tool in converted:
         assert tool["function"]["parameters"] == gateway.tools[tool["function"]["name"]].inputSchema
@@ -84,9 +85,9 @@ async def test_agent_real_mcp_n34(gateway, model, caplog):
         answer = await agent.ask(EXAMPLE)
     assert "34 tamamlanmış" in answer
     assert "df): 33" in answer
-    assert agent.last_execution.tool == "calculate_from_differences"
-    assert agent.last_execution.arguments == DIFFERENCES
-    assert agent.last_execution.result["sample_size"] == 34
+    assert agent.last_execution.tool == "power_analysis"
+    assert agent.last_execution.arguments == CONTRACT
+    assert agent.last_execution.result["n_total"] == 34
     assert agent.last_execution.request_id in caplog.text
     assert "MCP success" in caplog.text
     model.choose.assert_awaited_once()
@@ -188,17 +189,17 @@ async def test_result_not_reused(gateway, model):
 @pytest.mark.parametrize("value", [True, "5", None, float("nan"), float("inf")])
 async def test_client_strict_validation(gateway, value):
     with pytest.raises(AgentError):
-        validate_arguments(gateway.tools["calculate_from_differences"], {**DIFFERENCES, "mean_diff": value})
+        validate_arguments(gateway.tools["power_analysis"], {**CONTRACT, "dz": value})
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("changes", [
-    {"sample_size": True}, {"sample_size": 34.0}, {"df": 1},
-    {"delta": float("nan")}, {"actual_power": 2}, {"unknown": 1},
+    {"n_total": True}, {"n_total": 34.0}, {"df": 1},
+    {"ncp": float("nan")}, {"actual_power": 2}, {"unknown": 1},
 ])
 async def test_invalid_results(gateway, changes):
     with pytest.raises(AgentError):
-        validate_result(gateway.tools["calculate_from_differences"], {**RESULT, **changes})
+        validate_result(gateway.tools["power_analysis"], {**RESULT, **changes})
 
 
 @pytest.mark.anyio
@@ -228,6 +229,6 @@ async def test_official_ollama_request_serialization(gateway):
         message = await OllamaModel(client, Config()).choose(
             [{"role": "user", "content": EXAMPLE}], gateway.ollama_tools(),
         )
-    assert message.tool_calls[0].function.arguments == DIFFERENCES
+    assert message.tool_calls[0].function.arguments == CONTRACT
     assert seen[0]["model"] == "qwen2.5:7b"
     assert seen[0]["tools"][0]["type"] == "function"

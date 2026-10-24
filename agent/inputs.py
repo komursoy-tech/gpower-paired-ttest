@@ -23,6 +23,7 @@ ALIASES = {
     "correlation": r"correlation|korelasyon(?:u)?|r",
     "alpha": r"alpha|alfa|α",
     "target_power": r"target_power|hedef(?:lenen)? güç|güç|power",
+    "n_total": r"n_total|katilimci sayisi|hasta sayisi|çift sayisi|örneklem büyüklüğü",
 }
 REQUIRED = {
     "calculate_sample_size": ["effect_size_dz", "alpha", "target_power", "tails"],
@@ -35,6 +36,7 @@ LABELS = {
     "mean2": "sonrası ortalama (mean2)", "sd1": "öncesi standart sapma (sd1)",
     "sd2": "sonrası standart sapma (sd2)", "correlation": "korelasyon (correlation)",
     "alpha": "alpha", "target_power": "hedef güç", "tails": "test yönü (tek yönlü / çift yönlü)",
+    "n_total": "tamamlanmış çift/katılımcı sayısı (n_total)",
 }
 
 
@@ -67,6 +69,21 @@ def extract_explicit(text, context=None, *, requested_sd_diff=False):
             raise AgentError(f"{LABELS[field]} için çelişkili değerler var. Tek bir değer belirtin.")
         if values:
             found[field] = values.pop()
+
+    if "n_total" in found:
+        if not found["n_total"].is_integer():
+            raise AgentError("n_total tam sayı olmalı.")
+        found["n_total"] = int(found["n_total"])
+    modes = set(re.findall(r"(?<!\w)(a-priori|post-hoc)(?!\w)", text))
+    if re.search(r"post hoc|ulaşilan güç", text):
+        modes.add("post-hoc")
+    if len(modes) > 1:
+        raise AgentError("Analiz modu belirsiz: a-priori mi, post-hoc mu?")
+    if modes:
+        found["mode"] = modes.pop()
+    explicit_mode = re.search(r"(?<!\w)mode\s*(?:=|:)\s*([\w-]+)", text)
+    if explicit_mode and explicit_mode[1] not in {"a-priori", "post-hoc"}:
+        raise AgentError("Analiz modu a-priori veya post-hoc olmalı.")
 
     # "Each measurement" explicitly supplies the same SD for both measurements,
     # never the SD of differences. No means or correlation can be inferred.
@@ -104,6 +121,11 @@ def extract_explicit(text, context=None, *, requested_sd_diff=False):
             raise AgentError("Standart sapma belirsiz. Farkların standart sapmasını sd_diff olarak belirtin.")
 
     tails = set()
+    numeric_tails = re.search(rf"(?<!\w)tails\s*(?:=|:)\s*({NUMBER})", text)
+    if numeric_tails:
+        if numeric_tails[1] not in {"1", "2"}:
+            raise AgentError("tails tam sayı 1 veya 2 olmalı.")
+        tails.add("one-tailed" if numeric_tails[1] == "1" else "two-tailed")
     for pattern, value in [(r"two-tailed|çift yönlü|iki yönlü", "two-tailed"),
                            (r"one-tailed|tek yönlü", "one-tailed")]:
         if re.search(pattern, text):
@@ -138,8 +160,27 @@ def input_mode(values):
 
 def clarification(mode, values):
     if mode is None:
-        return "dz değerini, fark ortalaması ve farkların standart sapmasını veya eşleştirilmiş grup istatistiklerini belirtin. Alpha, hedef güç ve test yönü de gereklidir. Alan adlarıyla da yazabilirsiniz."
-    missing = [LABELS[key] for key in REQUIRED[mode] if key not in values]
+        power_input = "n_total" if analysis_mode(values) == "post-hoc" else "hedef güç"
+        return f"dz değerini, fark ortalaması ve farkların standart sapmasını veya eşleştirilmiş grup istatistiklerini belirtin. Alpha, {power_input} ve test yönü de gereklidir. Alan adlarıyla da yazabilirsiniz."
+    missing = [LABELS[key] for key in required_fields(mode, values) if key not in values]
     if missing:
         return "Hesaplama için eksik veya net olmayan bilgileri belirtin: " + ", ".join(missing) + ". Değerleri tahmin etmeyeceğim."
     return None
+
+
+def analysis_mode(values):
+    mode = values.get("mode", "post-hoc" if "n_total" in values else "a-priori")
+    if "n_total" in values and "target_power" in values:
+        raise AgentError("Tek analiz seçin: a-priori için hedef güç, post-hoc için n_total verin. 'yeni' ile sıfırlayabilirsiniz.")
+    if mode == "post-hoc" and "target_power" in values:
+        raise AgentError("Post-hoc analizde hedef güç değil n_total kullanılır.")
+    if mode == "a-priori" and "n_total" in values:
+        raise AgentError("A-priori analizde n_total değil hedef güç kullanılır.")
+    return mode
+
+
+def required_fields(source, values):
+    fields = list(REQUIRED.get(source, []))
+    if source and analysis_mode(values) == "post-hoc":
+        fields[fields.index("target_power")] = "n_total"
+    return fields

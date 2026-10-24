@@ -6,7 +6,8 @@ import re
 from uuid import uuid4
 
 from .errors import AgentError
-from .inputs import ambiguous_sd, clarification, extract_explicit, input_mode, REQUIRED, NUMBER, GROUP_FIELDS
+from .inputs import ambiguous_sd, clarification, extract_explicit, input_mode, required_fields, NUMBER, GROUP_FIELDS
+from .contract import prepare_arguments
 from .mcp_client import validate_arguments
 from .presentation import present
 
@@ -40,7 +41,7 @@ class Agent:
         if len(text) > 6000 or len(self.messages) >= 20:
             raise AgentError("Oturum girdi sınırına ulaşıldı. 'yeni' ile yeni hesaplama başlatın.")
         mode = input_mode(self.values)
-        missing = [key for key in REQUIRED.get(mode, []) if key not in self.values]
+        missing = [key for key in required_fields(mode, self.values) if key not in self.values]
         requested_sd_diff = (
             mode == "calculate_from_differences" and "sd_diff" in missing
             and bool(self.messages) and self.messages[-1]["role"] == "assistant"
@@ -75,11 +76,13 @@ class Agent:
         if question:
             self.messages.append({"role": "assistant", "content": question})
             return question
-        arguments = {key: candidate[key] for key in REQUIRED[mode]}
-        validate_arguments(self.gateway.tools[mode], arguments)
+        arguments = prepare_arguments(mode, candidate)
+        validate_arguments(self.gateway.tools["power_analysis"], arguments)
         message = await self.model.choose(
-            [*self.messages, {"role": "system", "content":
-                "Kullanıcının açıkça belirttiği doğrulanmış girdiler (araç seçimini sen yap): "
+            # Conversation state is for grounding/clarification, not tool fields.
+            # Raw clinical names in earlier turns must not contaminate this API.
+            [{"role": "user", "content":
+                "Eşleştirilmiş t-testi hesabını yalnızca bu doğrulanmış CLI argümanlarıyla yap: "
                 + json.dumps(arguments, ensure_ascii=False, allow_nan=False)}],
             self.gateway.ollama_tools(),
         )
@@ -91,7 +94,7 @@ class Agent:
         if call.name not in self.gateway.tools:
             raise AgentError(f"Model izin verilmeyen araç önerdi: {call.name}")
         validate_arguments(self.gateway.tools[call.name], call.arguments)
-        if call.name != mode or call.arguments != arguments:
+        if call.name != "power_analysis" or call.arguments != arguments:
             raise AgentError("Modelin araç seçimi/parametreleri açık kullanıcı girdileriyle uyuşmuyor. Hesaplama yapılmadı; alan adlarıyla netleştirin.")
         request_id = str(uuid4())
         logger.info("MCP request id=%s tool=%s arguments=%s", request_id, call.name, arguments)

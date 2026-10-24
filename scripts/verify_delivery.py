@@ -32,7 +32,7 @@ from agent.orchestrator import Agent
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence"
 QUERY = "Öncesi ve sonrası sistolik tansiyon farkı 5 mmHg, farkların standart sapması 10 mmHg. Alfa 0.05, güç %80, çift yönlü test için kaç hasta gerekir?"
-ARGS = {"mean_diff": 5, "sd_diff": 10, "alpha": 0.05, "target_power": 0.8, "tails": "two-tailed"}
+ARGS = {"test": "t-paired", "mode": "a-priori", "tails": 2, "dz": 0.5, "alpha": 0.05, "power": 0.8}
 PROTECTED = ["SPEC.md", "core_engine.py", "cli.py", "requirements.txt", ".gitignore",
              "MCP_OLLAMA_PLAN.md", "requirements-integration.txt", "requirements-dev.txt",
              "requirements-agent.txt", "validation_report.md"]
@@ -104,9 +104,9 @@ async def demo_receipt():
                 answer = await agent.ask(QUERY)
             receipt = agent.last_execution
             assert receipt is not None, answer
-            assert receipt.tool == "calculate_from_differences"
+            assert receipt.tool == "power_analysis"
             assert receipt.arguments == ARGS
-            assert len(wire) == 1 and wire[0]["response"]["structuredContent"]["sample_size"] == 34
+            assert len(wire) == 1 and wire[0]["response"]["structuredContent"]["n_total"] == 34
             save("demo-mcp-receipt.json", {
                 "model": config.model, "query": QUERY, "execution": asdict(receipt),
                 "actual_sdk_calls": wire, "answer": answer,
@@ -123,14 +123,14 @@ def demo():
          + "\nSTDERR:\n" + result.stderr + f"\nEXIT_CODE={result.returncode}")
     assert result.returncode == 0
     assert "34 tamamlanmış" in result.stdout
-    assert "tool=calculate_from_differences" in result.stderr and "MCP success" in result.stderr
+    assert "tool=power_analysis" in result.stderr and "MCP success" in result.stderr
     asyncio.run(demo_receipt())
     return 0
 
 
 class FixedModel:
     """Fault injection for hostile model output, clearly separate from live tests."""
-    def __init__(self, name="calculate_from_differences", arguments=None):
+    def __init__(self, name="power_analysis", arguments=None):
         self.name = name
         self.arguments = ARGS if arguments is None else arguments
 
@@ -174,8 +174,8 @@ async def negatives():
         await check("ambiguous_sd_alternatives", "mean_diff=5 standart sapması 10 standart sapması 20 alpha=0.05 güç %80 çift yönlü", FixedModel())
         await check("invalid_alpha", QUERY.replace("Alfa 0.05", "Alfa 1"), FixedModel(arguments={**ARGS, "alpha": 1}), False)
         await check("invented_tool", QUERY, FixedModel(name="invented_tool"))
-        await check("missing_tool_argument", QUERY, FixedModel(arguments={key: value for key, value in ARGS.items() if key != "sd_diff"}))
-        await check("wrong_type_tool_argument", QUERY, FixedModel(arguments={**ARGS, "sd_diff": "10"}))
+        await check("missing_tool_argument", QUERY, FixedModel(arguments={key: value for key, value in ARGS.items() if key != "dz"}))
+        await check("wrong_type_tool_argument", QUERY, FixedModel(arguments={**ARGS, "dz": "10"}))
         # Independent semantic probe: per-measurement SD cannot stand in for SD of differences.
         async with open_ollama(Config()) as live_model:
             await live_model.check_connection()

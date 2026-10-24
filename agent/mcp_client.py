@@ -13,10 +13,8 @@ from mcp.client.stdio import stdio_client
 from .errors import AgentError
 
 
-ALLOWED_TOOLS = frozenset({
-    "calculate_sample_size", "calculate_from_differences", "calculate_from_groups",
-})
-RESULT_FIELDS = {"sample_size", "df", "delta", "critical_t", "actual_power"}
+ALLOWED_TOOLS = frozenset({"power_analysis"})
+RESULT_FIELDS = {"n_total", "df", "ncp", "critical_t", "actual_power"}
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -26,26 +24,47 @@ def validate_arguments(tool, arguments):
     errors = list(Draft202012Validator(tool.inputSchema).iter_errors(arguments))
     if errors:
         raise AgentError(f"Geçersiz araç parametreleri: {errors[0].message}")
+    mode = arguments.get("mode")
+    expected = {"test", "mode", "tails", "dz", "alpha", "power" if mode == "a-priori" else "n_total"}
+    if mode not in {"a-priori", "post-hoc"} or arguments.get("test") != "t-paired":
+        raise AgentError("Desteklenmeyen test veya analiz modu.")
+    if set(arguments) != expected:
+        raise AgentError("Analiz modu için eksik veya fazladan araç argümanı var.")
     for key, value in arguments.items():
-        if key != "tails" and (
-            isinstance(value, bool) or not isinstance(value, (int, float))
-            or not math.isfinite(value)
-        ):
+        if key in {"test", "mode"}:
+            continue
+        try:
+            valid = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
             raise AgentError(f"{key}: sonlu bir sayı olmalı; metin/bool kabul edilmez.")
+        if key in {"tails", "n_total"} and type(value) is not int:
+            raise AgentError(f"{key}: tam sayı olmalı.")
+    if arguments["tails"] not in {1, 2}:
+        raise AgentError("tails 1 veya 2 olmalı.")
 
 
-def validate_result(tool, result):
-    if not isinstance(result, dict) or set(result) != RESULT_FIELDS:
-        raise AgentError("MCP sonucu beklenen beş alanı içermiyor.")
+def validate_result(tool, result, arguments=None):
+    post_hoc = arguments.get("mode") == "post-hoc" if arguments else isinstance(result, dict) and "power" in result
+    expected = {"df", "ncp", "critical_t", "power"} if post_hoc else RESULT_FIELDS
+    if not isinstance(result, dict) or set(result) != expected:
+        raise AgentError("MCP sonucu analiz modunun beklenen alanlarını içermiyor.")
     errors = list(Draft202012Validator(tool.outputSchema).iter_errors(result))
     if errors:
         raise AgentError(f"MCP çıktı şeması hatası: {errors[0].message}")
     for field, value in result.items():
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        try:
+            valid = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
             raise AgentError(f"MCP sonucu geçersiz: {field} sonlu sayı değil.")
-    if type(result["sample_size"]) is not int or type(result["df"]) is not int:
+    if type(result["df"]) is not int or (not post_hoc and type(result["n_total"]) is not int):
         raise AgentError("MCP sonucu: N ve df tam sayı olmalı.")
-    if result["df"] != result["sample_size"] - 1 or not 0 <= result["actual_power"] <= 1:
+    n = arguments["n_total"] if post_hoc and arguments else result["df"] + 1 if post_hoc else result["n_total"]
+    power = result["power"] if post_hoc else result["actual_power"]
+    if n < 2 or result["df"] != n - 1 or not 0 <= power <= 1:
         raise AgentError("MCP sonucu tutarsız.")
     return deepcopy(result)
 
@@ -60,7 +79,7 @@ class MCPGateway:
     async def discover(cls, session, timeout=30):
         tools = {tool.name: tool for tool in (await session.list_tools()).tools}
         if set(tools) != ALLOWED_TOOLS:
-            raise AgentError("MCP discovery: beklenen üç araç bulunamadı veya ek araç var.")
+            raise AgentError("MCP discovery: yalnızca power_analysis aracı bekleniyor.")
         for tool in tools.values():
             if tool.outputSchema is None:
                 raise AgentError("MCP aracı yapılandırılmış çıktı şeması sunmuyor.")
@@ -87,9 +106,12 @@ class MCPGateway:
         except Exception as exc:
             raise AgentError(f"MCP çağrısı başarısız: {exc}") from exc
         if response.isError:
+            error = response.structuredContent
+            if isinstance(error, dict) and set(error) == {"error", "code", "field"}:
+                raise AgentError(f"MCP araç hatası [{error['code']} / {error['field']}]: {error['error']}")
             detail = " ".join(block.text for block in response.content if block.type == "text")
             raise AgentError(f"MCP araç hatası: {detail}")
-        return validate_result(tool, response.structuredContent)
+        return validate_result(tool, response.structuredContent, arguments)
 
 
 @asynccontextmanager

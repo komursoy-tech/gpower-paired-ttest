@@ -1,8 +1,8 @@
 # G*Power Paired t-Test — Python, MCP ve Ollama
 
-Eşleştirilmiş iki ortalama t-testi için a priori örneklem büyüklüğü analizi. Python motoru, G*Power'ın ilgili modülünün davranışını [SPEC.md](SPEC.md) sözleşmesine göre bağımsız olarak uygular. MCP sunucusu motoru araçlar olarak sunar; yerel Ollama ajanı Türkçe sorguları bu araçlara bağlar.
+Eşleştirilmiş iki ortalama t-testi için a-priori örneklem büyüklüğü ve post-hoc güç analizi. Python motoru, ilgili modülün davranışını [SPEC.md](SPEC.md) sözleşmesine göre bağımsız olarak uygular. MCP sunucusu tek `power_analysis` aracı sunar; yerel Ollama ajanı Türkçe sorguları bu araca bağlar.
 
-**Doğrulama durumu — 22 Ekim 2026:** Tek ölçüm SD'sinin fark SD'si sayılması hatası yeniden üretildi ve düzeltildi. Mevcut 109 test ile 26 yeni regresyonun tamamı geçti: **135 başarılı, 0 başarısız, 0 atlanan**. Yedi gerçek Ollama + MCP testi ve dokuz negatif kontrol başarılı. [Nihai rapor, kök neden ve önce/sonra kanıtları](docs/final-integration-report.md).
+**Doğrulama durumu — 24 Ekim 2026:** Tek `power_analysis` aracına uyarlanan ajanla **176 başarılı, 0 başarısız, 0 atlanan test**. Dokuz gerçek Ollama + MCP testi ve dokuz negatif kontrol geçti. [Güncel ajan kullanımı ve gerçek sonuçlar](docs/agent-power-analysis.md). Önceki aşama raporları eski üç araçlı sürümün tarihsel kayıtlarıdır.
 
 ## Clean-room yaklaşımı ve motor
 
@@ -11,10 +11,11 @@ Hesaplama sözleşmesi SPEC'tir. Orijinal G*Power kaynak kodu, binary iç yapıs
 `core_engine.py` şu fonksiyonları sağlar:
 
 - `power_matched_pairs`: dz, alpha, hedef güç ve yön üzerinden gereken N'i bulur.
+- `post_hoc_matched_pairs`: dz, alpha, yön ve mevcut N üzerinden ulaşılan gücü hesaplar.
 - `calculate_dz_from_differences`: fark ortalaması ve farkların standart sapmasından dz türetir.
 - `calculate_dz_from_groups`: aynı kişilerin iki ölçümünün ortalamaları, SD'leri ve korelasyonundan dz türetir.
 
-Motor merkezi olmayan t dağılımını, gerektiğinde sayısal integrasyon yedeğini ve minimal tam sayı N aramasını kullanır. Üst sınır 100.000'dir. Çıktılar `sample_size`, `df`, `delta`, `critical_t`, `actual_power` alanlarıdır. N, tamamlanmış eşleşmiş çift/katılımcı sayısıdır; toplam ölçüm sayısı veya kayıp payı eklenmiş örneklem değildir.
+Motor merkezi olmayan t dağılımını, gerektiğinde sayısal integrasyon yedeğini ve minimal tam sayı N aramasını kullanır. Üst sınır 100.000'dir. A-priori CLI/MCP çıktısı `ncp`, `critical_t`, `df`, `n_total`, `actual_power`; post-hoc CLI/MCP çıktısı `ncp`, `critical_t`, `df`, `power` alanlarıdır. N, tamamlanmış eşleşmiş çift/katılımcı sayısıdır; toplam ölçüm sayısı veya kayıp payı eklenmiş örneklem değildir.
 
 ## Mimari
 
@@ -29,13 +30,11 @@ Türkçe kullanıcı girdisi
   → deterministik Türkçe yanıt
 ```
 
-| MCP aracı | Özel parametreler |
+| MCP aracı | Parametreler |
 |---|---|
-| `calculate_sample_size` | `effect_size_dz` |
-| `calculate_from_differences` | `mean_diff`, `sd_diff` |
-| `calculate_from_groups` | `mean1`, `mean2`, `sd1`, `sd2`, `correlation` |
+| `power_analysis` | `test`, `mode`, `tails`, `dz`, `alpha`; a-priori için `power`, post-hoc için `n_total` |
 
-Ortak ve zorunlu parametreler: `alpha`, `target_power`, `tails`. Yön `one-tailed` veya `two-tailed` olmalıdır. Korelasyon dahil eksik parametrelere varsayılan atanmaz. Bool, sayısal metin, null, sonlu olmayan değerler ve ek/eksik alanlar reddedilir. Matematik sunucu/ajan katmanında yeniden uygulanmaz.
+MCP'de `test=t-paired`, `mode=a-priori/post-hoc`, `tails=1/2` kullanılır. Girdiler ilgili moda göre zorunludur; bool, sayısal metin, null ve sonlu olmayan değerler reddedilir. Klinik girdilerden yalnız dz türetmek için mevcut motor yardımcıları ajan içinde yeniden kullanılır; N ve güç hesabı daima gerçek MCP çağrısındadır. Korelasyon ve eksik ortalamalar tahmin edilmez.
 
 Sunucu resmî MCP SDK 1.30.0'ın `FastMCP` API'sini kullanır. Sunucu stdout'u yalnızca protokol mesajları, stderr'i loglar içindir. Ajan resmî Ollama ve MCP istemcilerini kullanır; MCP alt sürecini kendisi başlatır ve kapatır. Modelin serbest metni hesaplama sonucu olarak gösterilmez. Başarılı ve doğrulanmış MCP cevabı olmadan sayısal hesaplama yanıtı verilmez. Her turda en fazla bir model isteği ve bir araç çağrısı vardır.
 
@@ -74,7 +73,9 @@ $env:PYTHONIOENCODING = 'utf-8'
 
 > Öncesi ve sonrası sistolik tansiyon farkı 5 mmHg, farkların standart sapması 10 mmHg. Alfa 0.05, güç %80, çift yönlü test için kaç hasta gerekir?
 
-Doğrulanmış demo: `calculate_from_differences`, N=34, df=33, ulaşılan güç yaklaşık %80.7778.
+Doğrulanmış demo: `power_analysis`, a-priori, dz=0.5; N=34, df=33, ulaşılan güç yaklaşık %80.7778.
+
+> Post-hoc dz=0.5, alpha=0.05, n_total=45, tek yönlü. Ulaşılan güç nedir?
 
 > Etki büyüklüğü dz=0.5, alpha=0.05, güç %80, çift yönlü eşleştirilmiş test için kaç katılımcı gerekir?
 
@@ -83,7 +84,7 @@ Doğrulanmış demo: `calculate_from_differences`, N=34, df=33, ulaşılan güç
 Doğrudan mevcut CLI veya ayrı MCP sunucusu:
 
 ```powershell
-.\.venv\Scripts\python.exe cli.py --effect-size 0.5 --alpha 0.05 --power 0.80 --tails two-tailed
+.\.venv\Scripts\python.exe cli.py --test t-paired --mode a-priori --dz 0.5 --alpha 0.05 --power 0.80 --tails 2
 .\.venv\Scripts\python.exe -m mcp_server
 ```
 
@@ -92,7 +93,7 @@ MCP sunucusu terminal sohbeti değildir; MCP istemcisinden JSON-RPC bekler. Ajan
 ## Testler ve gerçek sonuçlar
 
 ```powershell
-# Birim ve MCP testleri; 7 canlı model testi bilinçli skip olur.
+# Birim ve MCP testleri; 9 canlı model testi bilinçli skip olur.
 .\.venv\Scripts\python.exe -m pytest -q
 
 # Teslim kabulü: gerçek model testleri dahil bütün paket.
@@ -102,14 +103,14 @@ $env:OLLAMA_MODEL = 'qwen2.5:7b'
 Remove-Item Env:RUN_OLLAMA_TESTS
 ```
 
-Son gerçek tam çalıştırma: **135 passed in 40.16s**, başarısız/atlanan test yok. [Tam terminal çıktısı](docs/evidence/pytest-full.txt).
+Son gerçek tam çalıştırma: **176 passed in 73.44s**, başarısız/atlanan test yok. [Tam terminal çıktısı](docs/evidence/agent-single-tool-tests.txt).
 
 | Kapsam | Adet | Yöntem |
 |---|---:|---|
-| Mevcut motor, CLI ve SPEC vektörleri | 26 | Gerçek motor |
-| MCP sunucusu | 35 | Gerçek stdio, validasyon ve ayrıca spy testleri |
-| Ajan doğrulaması | 43 | Birim kontrolleri, mock model/HTTP ve gerçek MCP bağlantıları |
-| Canlı Ollama + MCP / terminal | 5 | Gerçek `qwen2.5:7b`, gerçek stdio, çıkış kontrolü |
+| Mevcut motor, CLI ve SPEC vektörleri | 46 | Gerçek motor |
+| MCP sunucusu ve CLI JSON eşitliği | 43 | Gerçek stdio, validasyon ve ayrıca spy testleri |
+| Ajan ve tek araç sözleşmesi | 54 | Birim kontrolleri, mock model/HTTP ve gerçek MCP bağlantıları |
+| Canlı Ollama + MCP / terminal | 7 | Gerçek `qwen2.5:7b`, a-priori/post-hoc, gerçek stdio, çıkış kontrolü |
 | Semantik SD regresyonları | 24 | Açık/belirsiz SD, eksik alanlar, çok turlu tamamlama ve gerçek MCP |
 | Canlı semantik regresyonlar | 2 | Gerçek modelle netleştirmeden önce sıfır çağrı; tamamlandıktan sonra N=34 |
 
@@ -130,11 +131,13 @@ Bu komutlar `docs/evidence/` kayıtlarını yeniler. `suite` öncesi korunan dos
 - Doğal dil katmanı muhafazakâr etiket/örüntü kontrolü kullanır; her Türkçe ifadeyi anlamaz. Alan adlarıyla netleştirme gerekebilir. Olumsuz/alternatifli ifadeler geniş biçimde reddedilir.
 - `temperature=0` her model sürümünde aynı davranışı garanti etmez. Başka model veya SDK sürümünde canlı testler tekrarlanmalıdır.
 - Transitif paketlerin tamamı kilitlenmiş değildir. Çalışan sürümler [ortam kaydındadır](docs/evidence/environment.json).
-- 135 test mevcut kapsamdaki başarıdır; bütün olası girdilerin doğruluğunu veya gizli değerlendirmelerde başarıyı garanti etmez. Mevcut minimal N testi bağımsız N−1 güç kontrolü yapmaz.
+- 176 test mevcut kapsamdaki başarıdır; bütün olası girdilerin doğruluğunu veya gizli değerlendirmelerde başarıyı garanti etmez. Mevcut minimal N testi bağımsız N−1 güç kontrolü yapmaz.
 - stdio yerel kullanım içindir; HTTP sunumu, uzak erişim güvenliği, genel amaçlı ajan veya klinik çalışma tasarımının tüm gereksinimleri bu kapsamda değildir.
 
 ## Teslim belgeleri
 
+- [Güncel tek araçlı ajan](docs/agent-power-analysis.md)
+- [power_analysis MCP sözleşmesi](docs/power-analysis.md)
 - [Nihai entegrasyon raporu ve kontrol listesi](docs/final-integration-report.md)
 - [MCP Aşama 1 dokümanı](docs/mcp-phase1.md)
 - [Ollama Aşama 2 dokümanı](docs/agent-phase2.md)

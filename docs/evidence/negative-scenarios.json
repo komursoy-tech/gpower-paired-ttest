@@ -19,16 +19,17 @@
     {
       "scenario": "invalid_alpha",
       "status": "PASS",
-      "message": "MCP araç hatası: Error executing tool calculate_from_differences: ValueError: Alpha must be between 0 and 1",
+      "message": "MCP araç hatası [OUT_OF_RANGE / alpha]: alpha must be between 0 and 1",
       "mcp_calls": [
         {
-          "name": "calculate_from_differences",
+          "name": "power_analysis",
           "arguments": {
-            "mean_diff": 5,
-            "sd_diff": 10,
+            "test": "t-paired",
+            "mode": "a-priori",
+            "tails": 2,
+            "dz": 0.5,
             "alpha": 1,
-            "target_power": 0.8,
-            "tails": "two-tailed"
+            "power": 0.8
           }
         }
       ],
@@ -44,7 +45,7 @@
     {
       "scenario": "missing_tool_argument",
       "status": "PASS",
-      "message": "Geçersiz araç parametreleri: 'sd_diff' is a required property",
+      "message": "Geçersiz araç parametreleri: 'dz' is a required property",
       "mcp_calls": [],
       "execution": null
     },
@@ -65,7 +66,7 @@
     {
       "scenario": "ollama_connection_refused",
       "status": "PASS",
-      "message": "Ollama servisine bağlanılamadı (http://127.0.0.1:63063). Ollama'yı başlatın.",
+      "message": "Ollama servisine bağlanılamadı (http://127.0.0.1:60047). Ollama'yı başlatın.",
       "execution": null
     },
     {

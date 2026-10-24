@@ -43,9 +43,9 @@ async def test_real_ollama_to_mcp(question, tool, expected):
             answer = await agent.ask(question)
             execution = agent.last_execution
             assert execution is not None, answer
-            assert execution.tool == tool
-            assert execution.arguments == {**expected, "alpha": 0.05, "target_power": 0.8, "tails": "two-tailed"}
-            assert execution.result["sample_size"] == 34
+            assert execution.tool == "power_analysis"
+            assert execution.arguments == {"test": "t-paired", "mode": "a-priori", "dz": 0.5, "alpha": 0.05, "power": 0.8, "tails": 2}
+            assert execution.result["n_total"] == 34
             assert "34 tamamlanmış" in answer
 
 
@@ -60,6 +60,33 @@ async def test_live_missing_parameter_followup():
             assert agent.last_execution is None
             answer = await agent.ask("çift yönlü")
             assert "34 tamamlanmış" in answer
+
+
+async def test_live_post_hoc_single_tool():
+    config = Config.from_env()
+    async with open_ollama(config) as model:
+        await model.check_connection()
+        async with open_mcp(config.mcp_timeout) as gateway:
+            agent = Agent(model, gateway)
+            answer = await agent.ask("Post-hoc analiz: dz=0.5, alpha=0.05, n_total=45, tek yönlü. Ulaşılan güç nedir?")
+            assert agent.last_execution.tool == "power_analysis"
+            assert agent.last_execution.arguments == {"test": "t-paired", "mode": "post-hoc", "dz": 0.5, "alpha": 0.05, "n_total": 45, "tails": 1}
+            assert agent.last_execution.result["power"] == pytest.approx(0.951240, abs=1e-5, rel=0)
+            assert "post-hoc" in answer and "hedef güç" not in answer
+
+
+async def test_live_post_hoc_n_followup():
+    config = Config.from_env()
+    async with open_ollama(config) as model:
+        await model.check_connection()
+        async with open_mcp(config.mcp_timeout) as gateway:
+            agent = Agent(model, gateway)
+            question = await agent.ask("Post-hoc dz=0.5 alpha=0.05 çift yönlü güç nedir?")
+            assert "n_total" in question and agent.last_execution is None
+            answer = await agent.ask("34")
+            assert agent.last_execution.arguments["n_total"] == 34
+            assert agent.last_execution.result["power"] == pytest.approx(0.807778, abs=1e-5, rel=0)
+            assert "post-hoc" in answer
 
 
 def test_live_terminal_question_and_exit():

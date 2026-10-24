@@ -7,13 +7,13 @@ from ollama import AsyncClient, ResponseError
 from .errors import AgentError
 
 
-SYSTEM = """Sen Türkçe eşleştirilmiş t-testi araç seçicisisin. Matematik hesaplama.
-Yalnızca verilen MCP araçlarından birini çağır. Kullanıcı verilerini verilen
-doğrulanmış girdi tablosuyla eşleştir. Asla eksik alan, korelasyon, alpha, güç
-veya test yönü varsayma. mean_diff farkların ortalaması; sd_diff farkların SD'si.
-Grup aracı aynı kişilerin iki ölçümü içindir. Bağımsız grupları hesaplama.
-%80 güç 0.80'dir. Sayıları JSON number, tails değerini one-tailed/two-tailed ver.
-Araç sonucu veya N uydurma. Bir mesajda en fazla bir araç çağır.
+SYSTEM = """Sen Türkçe eşleştirilmiş t-testi ajanısın. Matematik hesaplama.
+Tek araç power_analysis. Argümanları verilen doğrulanmış girdi tablosundan al.
+test='t-paired', mode='a-priori' veya 'post-hoc', tails tam sayı 1 veya 2.
+A-priori için power kullan; n_total gönderme. Post-hoc için n_total kullan;
+power gönderme. dz ve alpha sayıdır. Tablodaki alan adlarını değiştirme.
+Tablo dışında hiçbir alan gönderme. Girdiler uygulama tarafından doğrulandı.
+Asla N veya güç sonucu uydurma. Bir mesajda yalnızca bir power_analysis çağır.
 """
 
 

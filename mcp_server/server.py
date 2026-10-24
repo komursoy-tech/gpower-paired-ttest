@@ -1,33 +1,57 @@
-"""Thin FastMCP adapters; all statistical calculations belong to core_engine."""
+"""One MCP tool exposing the existing CLI contract without recalculating math."""
 
-from typing import Annotated, Literal
+import json
+import math
+from typing import Annotated, Any
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
-from pydantic import BaseModel, ConfigDict, Field
+from mcp.types import CallToolResult, TextContent
+from pydantic import Field
 
-import core_engine
+import cli
 
 
-# Strict float accepts JSON integers too, but never bool or numeric strings.
 Number = Annotated[float, Field(strict=True, allow_inf_nan=False)]
-Tails = Literal["one-tailed", "two-tailed"]
+Integer = Annotated[int, Field(strict=True)]
+Text = Annotated[str, Field(strict=True)]
+FIELDS = ("test", "mode", "tails", "dz", "alpha", "power", "n_total")
+COMMON = ("test", "mode", "tails", "dz", "alpha")
 
 
-class PowerResult(BaseModel):
-    """N counts completed matched pairs, not individual measurements."""
+def _response(value: dict[str, Any]) -> CallToolResult:
+    return CallToolResult(
+        content=[TextContent(type="text", text=json.dumps(
+            value, ensure_ascii=False, allow_nan=False, separators=(",", ":"),
+        ))],
+        structuredContent=value,
+        isError="error" in value,
+    )
 
-    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
-    sample_size: Annotated[int, Field(ge=2)]
-    df: Annotated[int, Field(ge=1)]
-    delta: float
-    critical_t: float
-    actual_power: float
+
+def _error(message, code, field):
+    return _response({"error": message, "code": code, "field": field})
 
 
-class StrictFastMCP(FastMCP):
-    """Reject extra arguments, which FastMCP's default arg model ignores."""
+def _execute(arguments):
+    # Reuse K2's parser, validation, error ordering and output-key selection.
+    # No printing/capturing stdout and no shell or CLI subprocess are involved.
+    argv = []
+    for field, value in arguments.items():
+        if value is not None:
+            argv.extend((f"--{field}", str(value)))
+    try:
+        return _response(cli.execute(cli.parser().parse_args(argv)))
+    except cli.CLIError as exc:
+        return _error(str(exc), exc.code, exc.field)
+    except (ValueError, TypeError, ArithmeticError, RuntimeError) as exc:
+        message = str(exc)
+        if "maximum" in message.lower() or "no solution" in message.lower():
+            return _error(message, "NO_SOLUTION", "n_total")
+        return _error(message, "INTERNAL", "input")
 
+
+class ContractFastMCP(FastMCP):
     async def list_tools(self):
         tools = await super().list_tools()
         for tool in tools:
@@ -35,73 +59,50 @@ class StrictFastMCP(FastMCP):
         return tools
 
     async def call_tool(self, name, arguments):
-        for tool in await self.list_tools():
-            if tool.name == name:
-                extra = arguments.keys() - tool.inputSchema["properties"].keys()
-                if extra:
-                    raise ToolError(f"Unexpected parameters: {', '.join(sorted(extra))}")
-                break
+        if name != "power_analysis":
+            raise ToolError(f"Unknown tool: {name}")
+        for field, value in arguments.items():
+            if field not in FIELDS:
+                return _error(f"Unknown parameter: {field}", "UNKNOWN_PARAM", "input")
+            if field in ("test", "mode"):
+                valid = type(value) is str
+            elif field in ("tails", "n_total"):
+                valid = type(value) is int
+            else:
+                try:
+                    valid = type(value) in (int, float) and math.isfinite(value)
+                except OverflowError:
+                    valid = False
+            if not valid:
+                return _error(f"{field} has an invalid JSON type or non-finite value", "INVALID_VALUE", field)
+        if any(field not in arguments for field in COMMON):
+            return _execute(arguments)
         return await super().call_tool(name, arguments)
 
 
-mcp = StrictFastMCP("gpower-paired-ttest", log_level="INFO")
-
-
-def _result(dz, alpha, target_power, tails):
-    return PowerResult.model_validate(
-        core_engine.power_matched_pairs(dz, alpha, target_power, tails)
-    )
-
-
-def _engine_error(exc):
-    return ToolError(f"{type(exc).__name__}: {exc}")
-
-
-ENGINE_ERRORS = (ValueError, TypeError, ZeroDivisionError, RuntimeError, OverflowError)
+mcp = ContractFastMCP("gpower-paired-ttest", log_level="INFO")
 
 
 @mcp.tool()
-def calculate_sample_size(
-    effect_size_dz: Number, alpha: Number, target_power: Number, tails: Tails
-) -> PowerResult:
-    """Calculate a-priori matched-pairs sample size from positive dz.
+def power_analysis(
+    test: Text,
+    mode: Text,
+    tails: Integer,
+    dz: Number,
+    alpha: Number,
+    power: Number = None,
+    n_total: Integer = None,
+) -> Annotated[CallToolResult, dict[str, Any]]:
+    """Paired t-test using exactly the existing CLI JSON contract.
 
-    alpha and target_power must be strictly between 0 and 1. All inputs required.
+    test must be 't-paired'; mode is 'a-priori' or 'post-hoc'; tails is 1 or 2.
+    Supply power only for a-priori, n_total only for post-hoc. No defaults for
+    analysis inputs. Returns the CLI JSON object, including error/code/field
+    for rejected inputs. No extra sample_size/delta fields or result envelope.
     """
-    try:
-        return _result(effect_size_dz, alpha, target_power, tails)
-    except ENGINE_ERRORS as exc:
-        raise _engine_error(exc) from exc
-
-
-@mcp.tool()
-def calculate_from_differences(
-    mean_diff: Number, sd_diff: Number, alpha: Number,
-    target_power: Number, tails: Tails,
-) -> PowerResult:
-    """Calculate sample size from the mean and SD of paired differences.
-
-    mean_diff must be nonzero; sd_diff positive. All inputs required.
-    """
-    try:
-        dz = core_engine.calculate_dz_from_differences(mean_diff, sd_diff)
-        return _result(dz, alpha, target_power, tails)
-    except ENGINE_ERRORS as exc:
-        raise _engine_error(exc) from exc
-
-
-@mcp.tool()
-def calculate_from_groups(
-    mean1: Number, mean2: Number, sd1: Number, sd2: Number,
-    correlation: Number, alpha: Number, target_power: Number, tails: Tails,
-) -> PowerResult:
-    """Calculate matched-pairs sample size from two measurements of the same people.
-
-    Not an independent-groups test. SDs must be positive, correlation in [-1,1],
-    and means different. All inputs required; no correlation is assumed.
-    """
-    try:
-        dz = core_engine.calculate_dz_from_groups(mean1, mean2, sd1, sd2, correlation)
-        return _result(dz, alpha, target_power, tails)
-    except ENGINE_ERRORS as exc:
-        raise _engine_error(exc) from exc
+    arguments = {"test": test, "mode": mode, "tails": tails, "dz": dz, "alpha": alpha}
+    if power is not None:
+        arguments["power"] = power
+    if n_total is not None:
+        arguments["n_total"] = n_total
+    return _execute(arguments)
