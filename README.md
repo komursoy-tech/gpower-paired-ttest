@@ -144,3 +144,11 @@ Bu komutlar `docs/evidence/` kayıtlarını yeniler. `suite` öncesi korunan dos
 - [Mimari plan](MCP_OLLAMA_PLAN.md)
 
 Sanal ortam, önbellek, yerel model dosyaları, `.env`, anahtarlar ve kişisel yollar teslim edilmemelidir. Git'e eklenecek dosyaları tek tek inceleyin; toplu eklemeden önce gizlilik ve clean-room kontrolünü [rapordaki listeden](docs/final-integration-report.md) tamamlayın.
+
+## 👥 Contributors
+
+| Name | GitHub Profile |
+|---|---|
+| Ahmet Yağız Memiş | [@AhmetYagizMemis](https://github.com/AhmetYagizMemis) |
+| Atefa Qorbani | [qorbaniatefa](https://github.com/qorbeniatefa) |
+| Kübra Ömürsoy | [@komursoy-tech](https://github.com/komursoy-tech) |
