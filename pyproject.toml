@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpower-paired-ttest-cli"
+version = "1.0.0"
+description = "K2 paired t-test power CLI"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy"]
+
+[project.scripts]
+gpower-clone = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "core_engine"]

@@ -1,0 +1,56 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.1.1, pluggy-1.7.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Far DigiTech\Desktop\gpower-paired-ttest
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 46 items
+
+tests/test_core.py::test_determine_differences PASSED                    [  2%]
+tests/test_core.py::test_determine_groups PASSED                         [  4%]
+tests/test_core.py::test_post_hoc PASSED                                 [  6%]
+tests/test_core.py::test_invalid_parameters[kwargs0-ValueError-Effect size must be strictly positive] PASSED [  8%]
+tests/test_core.py::test_invalid_parameters[kwargs1-TypeError-Numeric parameters must be int or float] PASSED [ 10%]
+tests/test_core.py::test_invalid_parameters[kwargs2-ValueError-Parameters cannot be NaN, Infinite or empty] PASSED [ 13%]
+tests/test_core.py::test_invalid_parameters[kwargs3-ValueError-Tails must be 'one-tailed' or 'two-tailed'] PASSED [ 15%]
+tests/test_core.py::test_invalid_parameters[kwargs4-ValueError-Alpha must be between 0 and 1] PASSED [ 17%]
+tests/test_core.py::test_invalid_parameters[kwargs5-ValueError-Target power must be between 0 and 1] PASSED [ 19%]
+tests/test_core.py::test_zero_standard_deviation PASSED                  [ 21%]
+tests/test_cli.py::test_public_k2_vectors[args0-actual_power] PASSED     [ 23%]
+tests/test_cli.py::test_public_k2_vectors[args1-power] PASSED            [ 26%]
+tests/test_cli.py::test_errors[args0-MISSING_PARAM-dz] PASSED            [ 28%]
+tests/test_cli.py::test_errors[args1-MISSING_PARAM-alpha] PASSED         [ 30%]
+tests/test_cli.py::test_errors[args2-MISSING_PARAM-power] PASSED         [ 32%]
+tests/test_cli.py::test_errors[args3-MISSING_PARAM-n_total] PASSED       [ 34%]
+tests/test_cli.py::test_errors[args4-UNKNOWN_PARAM-n_total] PASSED       [ 36%]
+tests/test_cli.py::test_errors[args5-UNKNOWN_PARAM-power] PASSED         [ 39%]
+tests/test_cli.py::test_errors[args6-UNKNOWN_PARAM-input] PASSED         [ 41%]
+tests/test_cli.py::test_errors[args7-UNKNOWN_PARAM-input] PASSED         [ 43%]
+tests/test_cli.py::test_errors[args8-OUT_OF_RANGE-tails] PASSED          [ 45%]
+tests/test_cli.py::test_errors[args9-INVALID_VALUE-tails] PASSED         [ 47%]
+tests/test_cli.py::test_errors[args10-OUT_OF_RANGE-dz] PASSED            [ 50%]
+tests/test_cli.py::test_errors[args11-OUT_OF_RANGE-alpha] PASSED         [ 52%]
+tests/test_cli.py::test_errors[args12-INVALID_VALUE-power] PASSED        [ 54%]
+tests/test_cli.py::test_errors[args13-INVALID_VALUE-n_total] PASSED      [ 56%]
+tests/test_cli.py::test_errors[args14-OUT_OF_RANGE-n_total] PASSED       [ 58%]
+tests/test_cli.py::test_errors[args15-UNSUPPORTED-test] PASSED           [ 60%]
+tests/test_cli.py::test_errors[args16-UNSUPPORTED-mode] PASSED           [ 63%]
+tests/test_cli.py::test_errors[args17-MISSING_PARAM-test] PASSED         [ 65%]
+tests/test_cli.py::test_version PASSED                                   [ 67%]
+tests/test_validation.py::test_apriori_vector[2-0.5-0.05-0.8-34-33-2.915476-2.034515-0.807778] PASSED [ 69%]
+tests/test_validation.py::test_apriori_vector[2-0.2-0.05-0.8-199-198-2.821347-1.972017-0.801691] PASSED [ 71%]
+tests/test_validation.py::test_apriori_vector[2-0.8-0.05-0.95-23-22-3.836665-2.073873-0.95585] PASSED [ 73%]
+tests/test_validation.py::test_apriori_vector[1-0.5-0.05-0.8-27-26-2.598076-1.705618-0.811832] PASSED [ 76%]
+tests/test_validation.py::test_apriori_vector[2-0.3-0.01-0.9-169-168-3.9-2.60541-0.900699] PASSED [ 78%]
+tests/test_validation.py::test_apriori_vector[2-0.3-0.001-0.95-277-276-4.992995-3.326125-0.950873] PASSED [ 80%]
+tests/test_validation.py::test_apriori_vector[2-0.3-0.001-0.99-356-355-5.660389-3.318143-0.990006] PASSED [ 82%]
+tests/test_validation.py::test_apriori_vector[2-0.5-0.001-0.999-169-168-6.5-3.349379-0.999045] PASSED [ 84%]
+tests/test_validation.py::test_apriori_vector[2-0.1-0.001-0.99-3161-3160-5.622277-3.293608-0.990016] PASSED [ 86%]
+tests/test_validation.py::test_apriori_vector[2-0.05-0.001-0.9-8367-8366-4.573565-3.29169-0.900001] PASSED [ 89%]
+tests/test_validation.py::test_apriori_vector[2-20-0.05-0.8-2-1-28.284271-12.706205-0.973524] PASSED [ 91%]
+tests/test_validation.py::test_posthoc_vector[2-0.5-34-0.05-0.807778] PASSED [ 93%]
+tests/test_validation.py::test_posthoc_vector[1-0.5-45-0.05-0.95124] PASSED [ 95%]
+tests/test_validation.py::test_posthoc_vector[2-0.35-40-0.05-0.578855] PASSED [ 97%]
+tests/test_validation.py::test_posthoc_vector[2-1.0-10-0.05-0.803097] PASSED [100%]
+
+============================= 46 passed in 1.91s ==============================
